@@ -1,5 +1,6 @@
 package com.strad.awsio.examples
 
+import cats.MonadError
 import cats.effect.IO
 import com.strad.awsio.s3.BucketOps
 import com.strad.awsio.s3.BucketOpsAwsImpl
@@ -30,16 +31,16 @@ object S3Example extends App {
     ret.unsafeRunTimed(10.seconds)
   }
 
-  private def bucketExistsError(item: Option[HeadBucketResponse]): Unit = {
+  private def bucketExistsError[F[_]](item: Option[HeadBucketResponse])(implicit f: MonadError[F, Throwable]): F[Unit] = {
     item match {
-      case Some(_) => throw new RuntimeException("Bucket should not exist")
-      case None    => ()
+      case Some(_) => f.raiseError(new RuntimeException("Bucket should not exist"))
+      case None    => f.pure(())
     }
   }
-  private def bucketDoesNotExistError(item: Option[HeadBucketResponse]): Unit = {
+  private def bucketDoesNotExistError[F[_]](item: Option[HeadBucketResponse])(implicit f: MonadError[F, Throwable]): F[Unit] = {
     item match {
-      case Some(_) => ()
-      case None => throw new RuntimeException("Bucket should exist")
+      case Some(_) => f.pure(())
+      case None => f.raiseError(new RuntimeException("Bucket should exist"))
     }
   }
   def createDeleteBucket(): Unit = {
@@ -50,14 +51,14 @@ object S3Example extends App {
     val deleteBucketRequest =
       DeleteBucketRequest.builder().bucket(bucketName).build()
     val ret = for {
-      _ <- bucket.exists(bucketRequest).map(bucketExistsError)
+      _ <- bucket.exists(bucketRequest).map(bucketExistsError[IO])
       _ <- bucket.create(createBucketRequest)
-      _ <- bucket.exists(bucketRequest).map(bucketDoesNotExistError)
+      _ <- bucket.exists(bucketRequest).map(bucketDoesNotExistError[IO])
       _ <- bucket.delete(deleteBucketRequest)
       _ = IO.sleep(5.seconds) // S3 eventual consistency sleep :)
-      _ <- bucket.exists(bucketRequest).map(bucketExistsError)
+      _ <- bucket.exists(bucketRequest).map(bucketExistsError[IO])
     } yield ()
-    ret.unsafeRunTimed(10.seconds)
+    ret.unsafeRunTimed(20.seconds)
   }
 
   listBuckets()

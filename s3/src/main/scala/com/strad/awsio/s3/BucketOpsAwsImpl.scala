@@ -19,7 +19,12 @@ class BucketOpsAwsImpl[F[_]](client: S3AsyncClient)(implicit f: Async[F], transf
   }
   def exists(headBucketRequest: HeadBucketRequest): F[Option[HeadBucketResponse]] = {
     transform(client.headBucket(headBucketRequest)).map(x => x.some).recover {
-      case e: NoSuchBucketException =>
+      // Docs say a NoSuchBucketException should occur for a bucket that does
+      // not exist.  That does not seem to be true and instead a 404 S3Exception
+      // is thrown
+      case _: NoSuchBucketException =>
+        None: Option[HeadBucketResponse]
+      case s: S3Exception if s.statusCode == 404 =>
         None: Option[HeadBucketResponse]
     }
   }
