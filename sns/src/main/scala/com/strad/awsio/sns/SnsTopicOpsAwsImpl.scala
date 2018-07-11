@@ -19,5 +19,8 @@ class SnsTopicOpsAwsImpl[F[_]](client: SNSAsyncClient)(implicit f: Async[F], tra
   def subscribe(subscribeRequest: SubscribeRequest): F[SubscribeResponse] = {
     transform(client.subscribe(subscribeRequest))
   }
+  def delete(deleteTopicRequest: DeleteTopicRequest): F[DeleteTopicResponse] = {
+    transform(client.deleteTopic(deleteTopicRequest))
+  }
 }
 
