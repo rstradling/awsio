@@ -17,8 +17,8 @@ lazy val root = project
     moduleName := "aws-io-root",
     name := "awsio-io-root"
   )
-  .aggregate(s3, sns, sqs, util)
-  .dependsOn(s3, sns, sqs, util)
+  .aggregate(s3, sns, sqs, util, sqsFs2, sqsMonix)
+  .dependsOn(s3, sns, sqs, util, sqsFs2, sqsMonix)
 
 lazy val s3 = project
   .settings(
@@ -40,6 +40,20 @@ lazy val sqs = project
       "software.amazon.awssdk" % "sqs" % "2.0.0-preview-10"
     )
   ).settings(sharedSettings)
+
+lazy val sqsFs2 = (project in file("sqs-fs2"))
+  .settings(
+    libraryDependencies ++= Seq(
+      "co.fs2" %% "fs2-io" % "1.0.0-M1"
+    )
+  ).dependsOn(sqs)
+
+lazy val sqsMonix = (project in file("sqs-monix"))
+  .settings(
+    libraryDependencies ++= Seq(
+      "io.monix" %% "monix" % "3.0.0-RC1",
+    )
+  ).dependsOn(sqs)
 
 lazy val util = project
   .settings(
