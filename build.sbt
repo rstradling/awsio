@@ -3,7 +3,9 @@ import Dependencies._
 val sharedSettings =  Seq(
     organization := "com.strad",
     crossScalaVersions := Seq("2.11.11", "2.12.6"),
-    scalacOptions += "-Ypartial-unification",
+    scalacOptions ++= Seq(/*"-Xfatal-warnings",*/
+      "-Ywarn-unused-import",
+      "-Ypartial-unification"),
     version := "0.1.0-SNAPSHOT",
     libraryDependencies ++= Seq(
       "org.typelevel" %% "cats-core" % "1.1.0",
