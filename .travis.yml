@@ -1,0 +1,38 @@
+sudo: false
+language: scala
+
+matrix:
+  include:
+    - jdk: oraclejdk8
+      scala: 2.11.12
+      env: COVERAGE=coverage
+    - jdk: oraclejdk10
+      scala: 2.11.12
+      env: COVERAGE=coverage
+    - jdk: oraclejdk8
+      scala: 2.12.6
+      env: COVERAGE=
+    - jdk: oraclejdk10
+      scala: 2.12.6
+      env: COVERAGE=
+
+script:
+  - export SBT_PROFILE=$COVERAGE
+  - sbt ++$TRAVIS_SCALA_VERSION $COVERAGE ci
+
+after_success:
+  - |
+    if [ "$COVERAGE" = "coverage" ]; then
+      export SBT_PROFILE=$COVERAGE
+      sbt ++$TRAVIS_SCALA_VERSION coverageAggregate coverageReport
+      bash <(curl -s https://codecov.io/bash)
+    fi
+before_cache:
+  - find $HOME/.sbt -name "*.lock" -type f -delete
+  - find $HOME/.ivy2/cache -name "ivydata-*.properties" -type f -delete
+
+cache:
+  directories:
+    - $HOME/.ivy2/cache
+    - $HOME/.coursier/cache
+    - $HOME/.sbt
