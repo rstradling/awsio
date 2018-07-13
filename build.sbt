@@ -2,10 +2,19 @@ import Dependencies._
 
 val sharedSettings =  Seq(
     organization := "com.strad",
-    crossScalaVersions := Seq("2.11.11", "2.12.6"),
+    crossScalaVersions := Seq("2.11.12", "2.12.6"),
     scalacOptions ++= Seq(/*"-Xfatal-warnings",*/
-      "-Ywarn-unused-import",
-      "-Ypartial-unification"),
+    "-Ywarn-unused-import",
+    "-Ypartial-unification",
+    "-deprecation",
+    "-encoding",
+    "UTF-8",
+    "-feature",
+    "-language:higherKinds",
+    "-target:jvm-1.8",
+    "-unchecked",
+    "-Ywarn-value-discard",
+    "-Ywarn-numeric-widen"),
     version := "0.1.0-SNAPSHOT",
     libraryDependencies ++= Seq(
       "org.typelevel" %% "cats-core" % "1.1.0",
@@ -67,3 +76,4 @@ lazy val util = project
 
 lazy val examples = project
   .dependsOn(s3, sns, sqs, util, sqsFs2, sqsMonix)
+  .settings(sharedSettings)
