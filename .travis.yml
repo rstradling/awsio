@@ -18,7 +18,7 @@ matrix:
 
 script:
   - export SBT_PROFILE=$COVERAGE
-  - sbt ++$TRAVIS_SCALA_VERSION $COVERAGE ci
+  - sbt ++$TRAVIS_SCALA_VERSION $COVERAGE test
 
 after_success:
   - |
