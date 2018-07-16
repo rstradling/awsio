@@ -24,7 +24,8 @@ object Fs2ReceiveLoop {
         fs2.Stream
           .repeatEval(messageOps.receive(receiveMessageRequest))
           .flatMap(
-            result => fs2.Stream.emits(result.messages().asScala)
+            result =>
+              fs2.Stream.emits(result.messages().asScala)
           )
       }
     }

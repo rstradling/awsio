@@ -21,7 +21,6 @@ val sharedSettings = Seq(
     "-Ywarn-value-discard",
     "-Ywarn-numeric-widen"
   ),
-  version := "0.1.0-SNAPSHOT",
   libraryDependencies ++= Seq(
     "org.typelevel" %% "cats-core" % "1.1.0",
     "org.typelevel" %% "cats-effect" % "1.0.0-RC2",
@@ -76,11 +75,14 @@ lazy val root = project
     moduleName := "aws-io-root",
     name := "awsio-io-root"
   )
+  .settings(sharedSettings)
   .aggregate(s3, sns, sqs, util, sqsFs2, sqsMonix, examples)
-  .dependsOn(s3, sns, sqs, util, sqsFs2, sqsMonix)
+  .dependsOn(s3, sns, sqs, util, sqsFs2, sqsMonix, examples)
 
 lazy val s3 = project
   .settings(
+    moduleName := "awsio-s3",
+    name := "awsio-s3",
     libraryDependencies ++= Seq(
       "software.amazon.awssdk" % "s3" % "2.0.0-preview-10"
     )
@@ -89,6 +91,8 @@ lazy val s3 = project
 
 lazy val sns = project
   .settings(
+    moduleName := "awsio-sns",
+    name := "awsio-sns",
     libraryDependencies ++= Seq(
       "software.amazon.awssdk" % "sns" % "2.0.0-preview-10"
     )
@@ -97,6 +101,8 @@ lazy val sns = project
 
 lazy val sqs = project
   .settings(
+    moduleName := "awsio-sqs",
+    name := "awsio-sqs",
     libraryDependencies ++= Seq(
       "software.amazon.awssdk" % "sqs" % "2.0.0-preview-10"
     )
@@ -105,22 +111,30 @@ lazy val sqs = project
 
 lazy val sqsFs2 = (project in file("sqs-fs2"))
   .settings(
+    moduleName := "awsio-sqs-fs2",
+    name := "awsio-sqs-fs2",
     libraryDependencies ++= Seq(
       "co.fs2" %% "fs2-io" % "1.0.0-M1"
     )
   )
   .dependsOn(sqs)
+  .settings(sharedSettings)
 
 lazy val sqsMonix = (project in file("sqs-monix"))
   .settings(
+    moduleName := "awsio-sqs-monix",
+    name := "awsio-sqs-monix",
     libraryDependencies ++= Seq(
       "io.monix" %% "monix" % "3.0.0-RC1"
     )
   )
   .dependsOn(sqs)
+  .settings(sharedSettings)
 
 lazy val util = project
   .settings(
+    moduleName := "awsio-util",
+    name := "awsio-util",
     libraryDependencies ++= Seq(
       "io.monix" %% "monix" % "3.0.0-RC1"
     )
