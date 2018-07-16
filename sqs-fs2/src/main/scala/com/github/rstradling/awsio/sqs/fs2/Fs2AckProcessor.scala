@@ -14,40 +14,49 @@ import software.amazon.awssdk.services.sqs.model.DeleteMessageRequest
 
 object Fs2AckProcessor {
 
-  def process[F[_], B](
-                                       client: SQSAsyncClient,
-                                       messageOps: MessageOps[F],
-                                       queueUrl: String,
-                                       receiveMessageRequest: ReceiveMessageRequest,
-                                       handler: Message => Either[Throwable, B])(
-                                       implicit p: AckProcessor[F, Message, B, fs2.Stream]): fs2.Stream[F, B] = {
+  def process[F[_]: Async, B](client: SQSAsyncClient,
+                       messageOps: MessageOps[F],
+                       queueUrl: String,
+                       receiveMessageRequest: ReceiveMessageRequest,
+                       handler: Message => Either[Throwable, B])(
+      implicit p: AckProcessor[F, Message, B, fs2.Stream]): fs2.Stream[F, B] = {
     p.processAndAck(client,
-      messageOps,
-      queueUrl,
-      receiveMessageRequest,
-      handler)(Fs2ReceiveLoop.receiveLoop[F])
+                    messageOps,
+                    queueUrl,
+                    receiveMessageRequest,
+                    handler)(Fs2ReceiveLoop.receiveLoop[F])
   }
 
-  implicit def ackProcessor[F[_]: Async, B]: AckProcessor[F, Message, B, fs2.Stream] =
+  private def deleteMessage[F[_]: Async](m: Message,
+                                         messageOps: MessageOps[F],
+                                         queueUrl: String): F[Unit] = {
+    val deleteMessageRequest = DeleteMessageRequest
+      .builder()
+      .queueUrl(queueUrl)
+      .receiptHandle(m.receiptHandle())
+      .build
+    for {
+      _ <- implicitly[Async[F]].delay(println(deleteMessageRequest))
+      deleteResponse <- messageOps.delete(deleteMessageRequest)
+      _ <- implicitly[Async[F]].delay(println(deleteResponse))
+    } yield ()
+  }
+  implicit def ackProcessor[F[_]: Async, B]
+    : AckProcessor[F, Message, B, fs2.Stream] =
     new AckProcessor[F, Message, B, fs2.Stream] {
       def processAndAck(client: SQSAsyncClient,
                         messageOps: MessageOps[F],
                         queueUrl: String,
                         receiveMessageRequest: ReceiveMessageRequest,
                         handler: Message => Either[Throwable, B])(
-                         implicit receiveLoop: ReceiveLoop[F, Message, fs2.Stream])
-      : fs2.Stream[F, B] = {
+          implicit receiveLoop: ReceiveLoop[F, Message, fs2.Stream])
+        : fs2.Stream[F, B] = {
         receiveLoop.receive(client, messageOps, receiveMessageRequest).flatMap {
           msg =>
             handler(msg).fold(
               (t => fs2.Stream.raiseError(t)), { item =>
-                val deleteMessageRequest = DeleteMessageRequest
-                  .builder()
-                  .queueUrl(queueUrl)
-                  .receiptHandle(msg.receiptHandle())
-                  .build
                 val ret = for {
-                  _ <- messageOps.delete(deleteMessageRequest)
+                  del <- deleteMessage(msg, messageOps, queueUrl)
                   res <- implicitly[Async[F]].pure(item)
                 } yield res
                 fs2.Stream.eval(ret)

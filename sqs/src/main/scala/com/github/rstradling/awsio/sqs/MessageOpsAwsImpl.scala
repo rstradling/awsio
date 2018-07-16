@@ -14,7 +14,7 @@ class MessageOpsAwsImpl[F[_]](client: SQSAsyncClient)(implicit f: Async[F], tran
     transform(client.sendMessageBatch(sendMessageBatchRequest))
   }
   def receive(receiveMessageRequest: ReceiveMessageRequest): F[ReceiveMessageResponse] = {
-    transform(client.receiveMessage(receiveMessageRequest))
+      transform(client.receiveMessage(receiveMessageRequest))
   }
   def delete(deleteMessageRequest: DeleteMessageRequest): F[DeleteMessageResponse] = {
     transform(client.deleteMessage(deleteMessageRequest))

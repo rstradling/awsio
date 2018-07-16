@@ -25,7 +25,7 @@ object SqsFs2Example extends App {
   val message: MessageOps[IO] = new MessageOpsAwsImpl[IO](builder)
 
   def publish(implicit processAndAck: AckProcessor[IO, Message, Unit, fs2.Stream],
-              receiveLoop:ReceiveLoop[IO, Message, fs2.Stream]): Option[Unit] = {
+              receiveLoop:ReceiveLoop[IO, Message, fs2.Stream]): Option[(Unit, Unit)] = {
     val qName = "strad-test-queue"
     val createReq = CreateQueueRequest.builder.queueName(qName).build
     val urlRequest = GetQueueUrlRequest.builder.queueName(qName).build
@@ -33,19 +33,20 @@ object SqsFs2Example extends App {
       createdResp <- sqs.create(createReq)
       urlResp <- sqs.getUrl(urlRequest)
       deleteRequest = DeleteQueueRequest.builder.queueUrl(urlResp.queueUrl()).build()
-      messageRequest = ReceiveMessageRequest.builder().queueUrl(urlResp.queueUrl()).build
+      messageRequest = ReceiveMessageRequest.builder().queueUrl(urlResp.queueUrl()).waitTimeSeconds(2).maxNumberOfMessages(10).build
       sendMessageRequest = SendMessageRequest.builder().queueUrl(urlResp.queueUrl())
         .messageBody("MyBody")
         .build
       pubMsg <- message.send(sendMessageRequest)
-      acker = processAndAck.processAndAck(builder, message, urlResp.queueUrl(), messageRequest, {m : Message =>
+      acker <- processAndAck.processAndAck(builder, message, urlResp.queueUrl(), messageRequest, {m : Message =>
         println(m)
         Right(()): Either[Throwable, Unit]
-      })
-    } yield (())
-    res.unsafeRunTimed(10.seconds)
+      }).compile.drain
 
+    } yield ((), acker)
+    res.unsafeRunTimed(1.minute)
   }
+
   val res = publish(Fs2AckProcessor.ackProcessor, Fs2ReceiveLoop.receiveLoop)
   res
 
