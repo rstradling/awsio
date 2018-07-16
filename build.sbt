@@ -2,7 +2,6 @@ import Dependencies._
 import scala.xml.Elem
 import scala.xml.transform.{RewriteRule, RuleTransformer}
 
-organization in ThisBuild := "com.github.rstradling"
 
 val sharedSettings = Seq(
   organization := "com.github.rstradling",
@@ -26,7 +25,8 @@ val sharedSettings = Seq(
     "org.typelevel" %% "cats-effect" % "1.0.0-RC2",
     scalaTest % Test
   ),
-  isSnapshot := version.value endsWith "SNAPSHOT",
+  organization := "com.github.rstradling",
+  isSnapshot in ThisBuild := version.value endsWith "SNAPSHOT",
   publishTo := Some(
     if (isSnapshot.value)
       Opts.resolver.sonatypeSnapshots
@@ -70,14 +70,15 @@ val sharedSettings = Seq(
   },
 )
 
-lazy val root = project
+lazy val root = (project in file("."))
   .settings(
     moduleName := "aws-io-root",
-    name := "awsio-io-root"
+    name := "awsio-io-root",
+    publishArtifact := false
   )
-  .settings(sharedSettings)
   .aggregate(s3, sns, sqs, util, sqsFs2, sqsMonix, examples)
   .dependsOn(s3, sns, sqs, util, sqsFs2, sqsMonix, examples)
+  .settings(sharedSettings)
 
 lazy val s3 = project
   .settings(
