@@ -1,4 +1,5 @@
 import Dependencies._
+import ReleaseTransformations._
 import scala.xml.Elem
 import scala.xml.transform.{RewriteRule, RuleTransformer}
 
@@ -26,6 +27,21 @@ val sharedSettings = Seq(
     scalaTest % Test
   ),
   organization := "com.github.rstradling",
+  releaseCrossBuild := true,
+  releaseProcess := Seq[ReleaseStep](
+    checkSnapshotDependencies,
+    inquireVersions,
+    runClean,
+    runTest,
+    setReleaseVersion,
+    commitReleaseVersion,
+    tagRelease,
+    releaseStepCommandAndRemaining("+publishSigned"),
+    setNextVersion,
+    commitNextVersion,
+    releaseStepCommand("sonatypeReleaseAll"),
+    pushChanges
+  ),
   isSnapshot in ThisBuild := version.value endsWith "SNAPSHOT",
   publishTo := Some(
     if (isSnapshot.value)
