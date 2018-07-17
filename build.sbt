@@ -37,19 +37,6 @@ val sharedSettings = Seq(
     false
   },
   sonatypeProfileName := organization.value,
-  pomExtra :=
-    <developers>
-      <developer>
-        <id>rstradling</id>
-        <name>Ryan Stradling</name>
-        <url>https://github/rstradling</url>
-      </developer>
-      <developer>
-        <id>dustinfarist</id>
-        <name>Dustin Farist</name>
-        <url>https://github.com/dustinfarist</url>
-      </developer>
-    </developers>,
   homepage := Some(url("https://rstradling/awsio/")),
   scmInfo := Some(ScmInfo(url("https://github.com/rstradling/awsio"), "git@github.com:rstradling/awsio.git")),
   licenses := Seq("APL2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
