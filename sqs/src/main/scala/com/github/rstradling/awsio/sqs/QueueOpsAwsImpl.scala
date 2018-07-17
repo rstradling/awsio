@@ -1,12 +1,12 @@
 package com.github.rstradling.awsio.sqs
 
 import cats.~>
-import cats.effect.Async
+import cats.effect.Effect
 import java.util.concurrent.CompletableFuture
 import software.amazon.awssdk.services.sqs.SQSAsyncClient
 import software.amazon.awssdk.services.sqs.model._
 
-class QueueOpsAwsImpl[F[_]](client: SQSAsyncClient)(implicit f: Async[F], transform: CompletableFuture ~> F) extends QueueOps[F] {
+class QueueOpsAwsImpl[F[_]](client: SQSAsyncClient)(implicit f: Effect[F], transform: CompletableFuture ~> F) extends QueueOps[F] {
   def create(queueRequest: CreateQueueRequest): F[CreateQueueResponse] = {
     transform(client.createQueue(queueRequest))
   }

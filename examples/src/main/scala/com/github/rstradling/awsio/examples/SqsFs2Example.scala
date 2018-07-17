@@ -48,6 +48,5 @@ object SqsFs2Example extends App {
   }
 
   val res = publish(Fs2AckProcessor.ackProcessor, Fs2ReceiveLoop.receiveLoop)
-  res
 
 }
