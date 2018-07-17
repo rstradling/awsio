@@ -1,13 +1,21 @@
 package com.github.rstradling.awsio.s3
 
 import cats.~>
-import cats.effect.Async
+import cats.effect.Effect
 import cats.implicits._
 import java.util.concurrent.CompletableFuture
 import software.amazon.awssdk.services.s3.S3AsyncClient
 import software.amazon.awssdk.services.s3.model._
 
-class BucketOpsAwsImpl[F[_]](client: S3AsyncClient)(implicit f: Async[F], transform: CompletableFuture ~> F) extends BucketOps [F] {
+/**
+  * Implementation of the aws bucket operations using an S3 async client.
+  * This client uses a Java 8 CompleteableFuture
+  * @param client - The s3 Async client
+  * @param f - Effect must support cats.effect.Effect operations
+  * @param transform - Natural transformation from a CompletableFuture to an F
+  * @tparam F - The effect type to use like Monix Task or IO
+  */
+class BucketOpsAwsImpl[F[_]](client: S3AsyncClient)(implicit f: Effect[F], transform: CompletableFuture ~> F) extends BucketOps [F] {
   def create(createBucketRequest: CreateBucketRequest): F[CreateBucketResponse] = {
     transform(client.createBucket(createBucketRequest))
   }

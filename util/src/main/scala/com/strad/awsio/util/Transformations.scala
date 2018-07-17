@@ -2,6 +2,7 @@ package com.strad.awsio.util
 
 import cats.~>
 import cats.effect.IO
+import cats.implicits._
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CancellationException
 import java.util.concurrent.CompletionException
@@ -28,7 +29,7 @@ object Transformations {
           }
         }
       })
-      IO(cf.cancel(true))
+      IO(cf.cancel(true)).void
     })
   def fromCompletableFuture[A](cf: CompletableFuture[A]): Task[A] =
     Task.async((_, cb) => {
@@ -46,7 +47,7 @@ object Transformations {
           }
         }
       })
-      Cancelable(() => cf.cancel(true))
+      Cancelable(() => { cf.cancel(true); ()})
     })
 
   implicit def completableFutureToIO[A] : CompletableFuture ~> IO = new (CompletableFuture ~> IO) {
