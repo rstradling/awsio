@@ -18,7 +18,6 @@ object Fs2AckProcessor {
 
   /**
     *
-    * @param client - The sqs client to use
     * @param messageOps - The message ops to use
     * @param queueUrl - The queueUrl to use for acking/deleting the message
     * @param receiveMessageRequest - The message request
@@ -34,8 +33,7 @@ object Fs2AckProcessor {
                        receiveMessageRequest: ReceiveMessageRequest,
                        handler: Message => Either[Throwable, B])(
       implicit p: AckProcessor[F, Message, B, fs2.Stream]): fs2.Stream[F, B] = {
-    p.processAndAck(client,
-                    messageOps,
+    p.processAndAck(messageOps,
                     queueUrl,
                     receiveMessageRequest,
                     handler)(Fs2ReceiveLoop.receiveLoop[F])
@@ -56,14 +54,13 @@ object Fs2AckProcessor {
   implicit def ackProcessor[F[_]: Effect, B]
     : AckProcessor[F, Message, B, fs2.Stream] =
     new AckProcessor[F, Message, B, fs2.Stream] {
-      def processAndAck(client: SQSAsyncClient,
-                        messageOps: MessageOps[F],
+      def processAndAck(messageOps: MessageOps[F],
                         queueUrl: String,
                         receiveMessageRequest: ReceiveMessageRequest,
                         handler: Message => Either[Throwable, B])(
           implicit receiveLoop: ReceiveLoop[F, Message, fs2.Stream])
         : fs2.Stream[F, B] = {
-        receiveLoop.receive(client, messageOps, receiveMessageRequest).flatMap {
+        receiveLoop.receive(messageOps, receiveMessageRequest).flatMap {
           msg =>
             handler(msg).fold(
               (t => fs2.Stream.raiseError(t)), { item =>

@@ -4,7 +4,6 @@ import cats.effect.Effect
 import com.github.rstradling.awsio.sqs.ReceiveLoop
 import com.github.rstradling.awsio.sqs.MessageOps
 import scala.collection.JavaConverters._
-import software.amazon.awssdk.services.sqs.SQSAsyncClient
 import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest
 import software.amazon.awssdk.services.sqs.model.Message
 
@@ -14,7 +13,6 @@ import software.amazon.awssdk.services.sqs.model.Message
 object Fs2ReceiveLoop {
   /**
     * Does a receive of a sqs message
-    * @param client - AWS SQSAsyncClient to use
     * @param messageOps - Message operations
     * @param receiveMessageRequest - Message request
     * @param r - ReceiveLoop typeclass implementation
@@ -24,16 +22,14 @@ object Fs2ReceiveLoop {
     * @return - A Stream of As using effect F
     */
   def receive[F[_], A, S[F[_], A]](
-      client: SQSAsyncClient,
       messageOps: MessageOps[F],
       receiveMessageRequest: ReceiveMessageRequest)(
       implicit r: ReceiveLoop[F, A, S]): S[F, A] = {
-    r.receive(client, messageOps, receiveMessageRequest)
+    r.receive(messageOps, receiveMessageRequest)
   }
   implicit def receiveLoop[F[_]: Effect]: ReceiveLoop[F, Message, fs2.Stream] =
     new ReceiveLoop[F, Message, fs2.Stream] {
-      def receive(client: SQSAsyncClient,
-                  messageOps: MessageOps[F],
+      def receive(messageOps: MessageOps[F],
                   receiveMessageRequest: ReceiveMessageRequest)
         : fs2.Stream[F, Message] = {
         val f = implicitly[Effect[F]]
