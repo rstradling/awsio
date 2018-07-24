@@ -18,12 +18,11 @@ object IterantReceiveLoop {
       messageOps: MessageOps[F],
       receiveMessageRequest: ReceiveMessageRequest)(
       implicit r: ReceiveLoop[F, A, S]): S[F, A] = {
-    r.receive(client, messageOps, receiveMessageRequest)
+    r.receive(messageOps, receiveMessageRequest)
   }
   implicit def receiveLoop[F[_]: Async]: ReceiveLoop[F, Message, Iterant] =
     new ReceiveLoop[F, Message, Iterant] {
       def receive(
-          client: SQSAsyncClient,
           messageOps: MessageOps[F],
           receiveMessageRequest: ReceiveMessageRequest): Iterant[F, Message] = {
         val results: ReceiveMessageResponse => Iterant[F, Message] = { a =>

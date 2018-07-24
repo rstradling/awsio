@@ -1,6 +1,5 @@
 package com.github.rstradling.awsio.sqs
 
-import software.amazon.awssdk.services.sqs.SQSAsyncClient
 import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest
 import software.amazon.awssdk.services.sqs.model.Message
 
@@ -11,8 +10,7 @@ import software.amazon.awssdk.services.sqs.model.Message
   * @tparam S - The stream type to use like fs2.Stream or Monix.Iterant
   */
 trait ReceiveLoop[F[_], A, S[F[_], A]] {
-  def receive(client: SQSAsyncClient,
-              messageOps: MessageOps[F],
+  def receive(messageOps: MessageOps[F],
               receiveMessageRequest: ReceiveMessageRequest): S[F, A]
 }
 
@@ -24,8 +22,7 @@ trait ReceiveLoop[F[_], A, S[F[_], A]] {
   * @tparam S - The stream type to use like fs2.Stream or Monix.Iterant
   */
 trait AckProcessor[F[_], A, B, S[F[_], B]] {
-  def processAndAck(client: SQSAsyncClient,
-                    messageOps: MessageOps[F],
+  def processAndAck(messageOps: MessageOps[F],
                     queueUrl: String,
                     receiveMessageRequest: ReceiveMessageRequest,
                     handler: Message => Either[Throwable, B])(implicit receiveLoop: ReceiveLoop[F, A, S]): S[F, B]
