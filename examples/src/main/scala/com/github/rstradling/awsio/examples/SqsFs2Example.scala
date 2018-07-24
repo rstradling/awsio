@@ -38,7 +38,7 @@ object SqsFs2Example extends App {
         .messageBody("MyBody")
         .build
       pubMsg <- message.send(sendMessageRequest)
-      acker <- processAndAck.processAndAck(message, urlResp.queueUrl(), messageRequest, {m : Message =>
+      acker <- Fs2AckProcessor.process(message, urlResp.queueUrl(), messageRequest, {m : Message =>
         println(m)
         Right(()): Either[Throwable, Unit]
       }).compile.drain

@@ -5,7 +5,6 @@ import cats.implicits._
 import com.github.rstradling.awsio.sqs.ReceiveLoop
 import com.github.rstradling.awsio.sqs.MessageOps
 import com.github.rstradling.awsio.sqs.AckProcessor
-import software.amazon.awssdk.services.sqs.SQSAsyncClient
 import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest
 import software.amazon.awssdk.services.sqs.model.Message
 import software.amazon.awssdk.services.sqs.model.DeleteMessageRequest
@@ -27,8 +26,7 @@ object Fs2AckProcessor {
     * @tparam B
     * @return
     */
-  def process[F[_]: Effect, B](client: SQSAsyncClient,
-                       messageOps: MessageOps[F],
+  def process[F[_]: Effect, B](messageOps: MessageOps[F],
                        queueUrl: String,
                        receiveMessageRequest: ReceiveMessageRequest,
                        handler: Message => Either[Throwable, B])(
