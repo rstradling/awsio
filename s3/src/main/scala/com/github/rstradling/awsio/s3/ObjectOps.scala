@@ -11,8 +11,13 @@ import software.amazon.awssdk.services.s3.model._
   * @tparam F - The effect type to use like Monix Task or IO
   */
 trait ObjectOps[F[_]] {
-  def put(putObjectRequest: PutObjectRequest, body: AsyncRequestBody): F[PutObjectResponse]
-  def putMultipart(uploadPartRequest: UploadPartRequest, body: AsyncRequestBody): F[UploadPartResponse]
-  def get(getObjectRequest: GetObjectRequest, asyncResponseTransformer: AsyncResponseTransformer[GetObjectResponse,GetObjectResponse]): F[GetObjectResponse]
+  def put(putObjectRequest: PutObjectRequest,
+          body: AsyncRequestBody): F[PutObjectResponse]
+  def putMultipart(uploadPartRequest: UploadPartRequest,
+                   body: AsyncRequestBody): F[UploadPartResponse]
+  def get(getObjectRequest: GetObjectRequest,
+          asyncResponseTransformer: AsyncResponseTransformer[GetObjectResponse,
+                                                             GetObjectResponse])
+    : F[GetObjectResponse]
   def delete(DeleteObjectRequest: DeleteObjectRequest): F[DeleteObjectResponse]
 }

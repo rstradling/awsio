@@ -25,8 +25,6 @@ trait AckProcessor[F[_], A, B, S[F[_], B]] {
   def processAndAck(messageOps: MessageOps[F],
                     queueUrl: String,
                     receiveMessageRequest: ReceiveMessageRequest,
-                    handler: Message => Either[Throwable, B])(implicit receiveLoop: ReceiveLoop[F, A, S]): S[F, B]
+                    handler: Message => Either[Throwable, B])(
+      implicit receiveLoop: ReceiveLoop[F, A, S]): S[F, B]
 }
-
-
-

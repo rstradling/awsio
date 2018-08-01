@@ -6,7 +6,10 @@ import java.util.concurrent.CompletableFuture
 import software.amazon.awssdk.services.sns.SNSAsyncClient
 import software.amazon.awssdk.services.sns.model._
 
-class SnsTopicOpsAwsImpl[F[_]](client: SNSAsyncClient)(implicit f: Effect[F], transform: CompletableFuture ~> F) extends SnsTopicOps[F] {
+class SnsTopicOpsAwsImpl[F[_]](client: SNSAsyncClient)(
+    implicit f: Effect[F],
+    transform: CompletableFuture ~> F)
+    extends SnsTopicOps[F] {
   def create(createTopicRequest: CreateTopicRequest): F[CreateTopicResponse] = {
     transform(client.createTopic(createTopicRequest))
   }
@@ -23,4 +26,3 @@ class SnsTopicOpsAwsImpl[F[_]](client: SNSAsyncClient)(implicit f: Effect[F], tr
     transform(client.deleteTopic(deleteTopicRequest))
   }
 }
-

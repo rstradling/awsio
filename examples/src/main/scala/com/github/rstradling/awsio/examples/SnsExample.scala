@@ -20,14 +20,22 @@ object SnsExample extends App {
     val listTopicsReq = ListTopicsRequest.builder().build
     val res = for {
       createdResp <- sns.create(createReq)
-      pubReq = PublishRequest.builder().message("Hello world").subject("Hello").targetArn(createdResp.topicArn()).build
+      pubReq = PublishRequest
+        .builder()
+        .message("Hello world")
+        .subject("Hello")
+        .targetArn(createdResp.topicArn())
+        .build
       _ <- sns.publish(pubReq)
       items <- sns.list(listTopicsReq)
       _ = println(items)
-      delTopReq = DeleteTopicRequest.builder().topicArn(createdResp.topicArn()).build()
+      delTopReq = DeleteTopicRequest
+        .builder()
+        .topicArn(createdResp.topicArn())
+        .build()
       _ <- sns.delete(delTopReq)
     } yield ()
-    res.unsafeRunTimed(10.seconds)
+    val _ = res.unsafeRunTimed(10.seconds)
     ()
   }
   publish()
