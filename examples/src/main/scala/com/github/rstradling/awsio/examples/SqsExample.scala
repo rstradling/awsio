@@ -16,7 +16,7 @@ import software.amazon.awssdk.services.sqs.model.SendMessageRequest
 import software.amazon.awssdk.services.sqs.model.DeleteMessageRequest
 
 object SqsExample extends App {
-  import com.strad.awsio.util.Transformations._
+  import com.github.rstradling.awsio.util.Transformations._
   val builder = SQSAsyncClient.builder().build
   val sqs: QueueOps[IO] = new QueueOpsAwsImpl[IO](builder)
   val message: MessageOps[IO] = new MessageOpsAwsImpl[IO](builder)

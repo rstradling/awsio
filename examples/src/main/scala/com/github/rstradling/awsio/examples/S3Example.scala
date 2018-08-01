@@ -4,7 +4,6 @@ import cats.MonadError
 import cats.effect.IO
 import com.github.rstradling.awsio.s3.BucketOpsAwsImpl
 import com.github.rstradling.awsio.s3.BucketOps
-import com.strad.awsio.util.Transformations._
 import software.amazon.awssdk.services.s3.S3AsyncClient
 import software.amazon.awssdk.services.s3.model.ListBucketsRequest
 import scala.collection.JavaConverters._
@@ -16,6 +15,7 @@ import software.amazon.awssdk.services.s3.model.DeleteBucketRequest
 import software.amazon.awssdk.services.s3.model.HeadBucketResponse
 
 object S3Example extends App {
+  import com.github.rstradling.awsio.util.Transformations._
   val builder = S3AsyncClient.builder().build
   val bucket: BucketOps[IO] = new BucketOpsAwsImpl[IO](builder)
 

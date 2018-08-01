@@ -1,4 +1,4 @@
-package com.strad.awsio.util
+package com.github.rstradling.awsio.util
 
 import cats.~>
 import cats.effect.IO
