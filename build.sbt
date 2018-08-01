@@ -23,7 +23,7 @@ val sharedSettings = Seq(
     "-Ywarn-numeric-widen"
   ),
   libraryDependencies ++= Seq(
-    "org.typelevel" %% "cats-core" % "1.1.0",
+    "org.typelevel" %% "cats-core" % "1.2.0",
     "org.typelevel" %% "cats-effect" % "1.0.0-RC2",
     scalaTest % Test
   ),
@@ -119,7 +119,7 @@ lazy val sqsFs2 = (project in file("sqs-fs2"))
     moduleName := "awsio-sqs-fs2",
     name := "awsio-sqs-fs2",
     libraryDependencies ++= Seq(
-      "co.fs2" %% "fs2-io" % "1.0.0-M1"
+      "co.fs2" %% "fs2-io" % "1.0.0-M2"
     )
   )
   .dependsOn(sqs)
