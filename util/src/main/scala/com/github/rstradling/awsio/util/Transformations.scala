@@ -47,11 +47,12 @@ object Transformations {
           }
         }
       })
-      Cancelable(() => { cf.cancel(true); ()})
+      Cancelable(() => { cf.cancel(true); () })
     })
 
-  implicit def completableFutureToIO[A] : CompletableFuture ~> IO = new (CompletableFuture ~> IO) {
-    def apply[A](a: CompletableFuture[A]): IO[A] = toIO(a)
-  }
+  implicit def completableFutureToIO[A]: CompletableFuture ~> IO =
+    new (CompletableFuture ~> IO) {
+      def apply[A](a: CompletableFuture[A]): IO[A] = toIO(a)
+    }
 
 }

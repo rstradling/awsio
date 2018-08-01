@@ -32,16 +32,19 @@ object S3Example extends App {
     ()
   }
 
-  private def bucketExistsError[F[_]](item: Option[HeadBucketResponse])(implicit f: MonadError[F, Throwable]): F[Unit] = {
+  private def bucketExistsError[F[_]](item: Option[HeadBucketResponse])(
+      implicit f: MonadError[F, Throwable]): F[Unit] = {
     item match {
-      case Some(_) => f.raiseError(new RuntimeException("Bucket should not exist"))
-      case None    => f.pure(())
+      case Some(_) =>
+        f.raiseError(new RuntimeException("Bucket should not exist"))
+      case None => f.pure(())
     }
   }
-  private def bucketDoesNotExistError[F[_]](item: Option[HeadBucketResponse])(implicit f: MonadError[F, Throwable]): F[Unit] = {
+  private def bucketDoesNotExistError[F[_]](item: Option[HeadBucketResponse])(
+      implicit f: MonadError[F, Throwable]): F[Unit] = {
     item match {
       case Some(_) => f.pure(())
-      case None => f.raiseError(new RuntimeException("Bucket should exist"))
+      case None    => f.raiseError(new RuntimeException("Bucket should exist"))
     }
   }
   def createDeleteBucket(): Unit = {

@@ -24,24 +24,38 @@ object SqsFs2Example extends App {
   val sqs: QueueOps[IO] = new QueueOpsAwsImpl[IO](builder)
   val message: MessageOps[IO] = new MessageOpsAwsImpl[IO](builder)
 
-  def publish(implicit processAndAck: AckProcessor[IO, Message, Unit, fs2.Stream],
-              receiveLoop:ReceiveLoop[IO, Message, fs2.Stream]): Option[(Unit, Unit)] = {
+  def publish(
+      implicit processAndAck: AckProcessor[IO, Message, Unit, fs2.Stream],
+      receiveLoop: ReceiveLoop[IO, Message, fs2.Stream])
+    : Option[(Unit, Unit)] = {
     val qName = "strad-test-queue"
     val createReq = CreateQueueRequest.builder.queueName(qName).build
     val urlRequest = GetQueueUrlRequest.builder.queueName(qName).build
     val res = for {
       createdResp <- sqs.create(createReq)
       urlResp <- sqs.getUrl(urlRequest)
-      deleteRequest = DeleteQueueRequest.builder.queueUrl(urlResp.queueUrl()).build()
-      messageRequest = ReceiveMessageRequest.builder().queueUrl(urlResp.queueUrl()).waitTimeSeconds(2).maxNumberOfMessages(10).build
-      sendMessageRequest = SendMessageRequest.builder().queueUrl(urlResp.queueUrl())
+      deleteRequest = DeleteQueueRequest.builder
+        .queueUrl(urlResp.queueUrl())
+        .build()
+      messageRequest = ReceiveMessageRequest
+        .builder()
+        .queueUrl(urlResp.queueUrl())
+        .waitTimeSeconds(2)
+        .maxNumberOfMessages(10)
+        .build
+      sendMessageRequest = SendMessageRequest
+        .builder()
+        .queueUrl(urlResp.queueUrl())
         .messageBody("MyBody")
         .build
       pubMsg <- message.send(sendMessageRequest)
-      acker <- Fs2AckProcessor.process(message, urlResp.queueUrl(), messageRequest, {m : Message =>
-        println(m)
-        Right(()): Either[Throwable, Unit]
-      }).compile.drain
+      acker <- Fs2AckProcessor
+        .process(message, urlResp.queueUrl(), messageRequest, { m: Message =>
+          println(m)
+          Right(()): Either[Throwable, Unit]
+        })
+        .compile
+        .drain
 
     } yield ((), acker)
     res.unsafeRunTimed(1.minute)

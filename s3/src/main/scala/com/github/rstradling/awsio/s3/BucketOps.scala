@@ -10,5 +10,6 @@ trait BucketOps[F[_]] {
   def create(createBucketRequest: CreateBucketRequest): F[CreateBucketResponse]
   def list(listBucketsRequest: ListBucketsRequest): F[ListBucketsResponse]
   def delete(deleteBucketRequest: DeleteBucketRequest): F[DeleteBucketResponse]
-  def exists(headBucketRequest: HeadBucketRequest): F[Option[HeadBucketResponse]]
+  def exists(
+      headBucketRequest: HeadBucketRequest): F[Option[HeadBucketResponse]]
 }

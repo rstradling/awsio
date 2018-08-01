@@ -28,15 +28,25 @@ object SqsExample extends App {
     val res = for {
       createdResp <- sqs.create(createReq)
       urlResp <- sqs.getUrl(urlRequest)
-      deleteRequest = DeleteQueueRequest.builder.queueUrl(urlResp.queueUrl()).build()
-      messageRequest = ReceiveMessageRequest.builder().queueUrl(urlResp.queueUrl()).build
-      sendMessageRequest = SendMessageRequest.builder().queueUrl(urlResp.queueUrl())
+      deleteRequest = DeleteQueueRequest.builder
+        .queueUrl(urlResp.queueUrl())
+        .build()
+      messageRequest = ReceiveMessageRequest
+        .builder()
+        .queueUrl(urlResp.queueUrl())
+        .build
+      sendMessageRequest = SendMessageRequest
+        .builder()
+        .queueUrl(urlResp.queueUrl())
         .messageBody("MyBody")
         .build
       pubMsg <- message.send(sendMessageRequest)
       msg <- message.receive(messageRequest)
       x = msg.messages().asScala.head
-      deleteMessageRequest = DeleteMessageRequest.builder.queueUrl(urlResp.queueUrl()).receiptHandle(x.receiptHandle()).build
+      deleteMessageRequest = DeleteMessageRequest.builder
+        .queueUrl(urlResp.queueUrl())
+        .receiptHandle(x.receiptHandle())
+        .build
       _ <- message.delete(deleteMessageRequest)
       _ = println(x)
       _ <- sqs.delete(deleteRequest)

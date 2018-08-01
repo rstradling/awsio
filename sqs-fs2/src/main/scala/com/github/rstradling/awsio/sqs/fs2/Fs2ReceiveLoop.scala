@@ -11,6 +11,7 @@ import software.amazon.awssdk.services.sqs.model.Message
   * Fs2 based processing of sqs messages
   */
 object Fs2ReceiveLoop {
+
   /**
     * Does a receive of a sqs message
     * @param messageOps - Message operations
@@ -34,9 +35,11 @@ object Fs2ReceiveLoop {
         : fs2.Stream[F, Message] = {
         val f = implicitly[Effect[F]]
         for {
-          _  <- fs2.Stream.repeatEval(f.pure(()))
-          m  <- fs2.Stream.eval(messageOps.receive(receiveMessageRequest))
-          message <- if (m != null && m.messages != null && m.messages().size > 0) {
+          _ <- fs2.Stream.repeatEval(f.pure(()))
+          m <- fs2.Stream.eval(messageOps.receive(receiveMessageRequest))
+          message <- if (m != null && m.messages != null && m
+                           .messages()
+                           .size > 0) {
             fs2.Stream.emits(m.messages().asScala)
           } else {
             fs2.Stream.empty

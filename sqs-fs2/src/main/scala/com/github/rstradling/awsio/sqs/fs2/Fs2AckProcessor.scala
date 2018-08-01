@@ -27,19 +27,17 @@ object Fs2AckProcessor {
     * @return
     */
   def process[F[_]: Effect, B](messageOps: MessageOps[F],
-                       queueUrl: String,
-                       receiveMessageRequest: ReceiveMessageRequest,
-                       handler: Message => Either[Throwable, B])(
+                               queueUrl: String,
+                               receiveMessageRequest: ReceiveMessageRequest,
+                               handler: Message => Either[Throwable, B])(
       implicit p: AckProcessor[F, Message, B, fs2.Stream]): fs2.Stream[F, B] = {
-    p.processAndAck(messageOps,
-                    queueUrl,
-                    receiveMessageRequest,
-                    handler)(Fs2ReceiveLoop.receiveLoop[F])
+    p.processAndAck(messageOps, queueUrl, receiveMessageRequest, handler)(
+      Fs2ReceiveLoop.receiveLoop[F])
   }
 
   private def deleteMessage[F[_]: Effect](m: Message,
-                                         messageOps: MessageOps[F],
-                                         queueUrl: String): F[Unit] = {
+                                          messageOps: MessageOps[F],
+                                          queueUrl: String): F[Unit] = {
     val deleteMessageRequest = DeleteMessageRequest
       .builder()
       .queueUrl(queueUrl)
@@ -58,17 +56,16 @@ object Fs2AckProcessor {
                         handler: Message => Either[Throwable, B])(
           implicit receiveLoop: ReceiveLoop[F, Message, fs2.Stream])
         : fs2.Stream[F, B] = {
-        receiveLoop.receive(messageOps, receiveMessageRequest).flatMap {
-          msg =>
-            handler(msg).fold(
-              (t => fs2.Stream.raiseError(t)), { item =>
-                val ret = for {
-                  del <- deleteMessage(msg, messageOps, queueUrl)
-                  res <- implicitly[Effect[F]].pure(item)
-                } yield res
-                fs2.Stream.eval(ret)
-              }
-            )
+        receiveLoop.receive(messageOps, receiveMessageRequest).flatMap { msg =>
+          handler(msg).fold(
+            (t => fs2.Stream.raiseError(t)), { item =>
+              val ret = for {
+                del <- deleteMessage(msg, messageOps, queueUrl)
+                res <- implicitly[Effect[F]].pure(item)
+              } yield res
+              fs2.Stream.eval(ret)
+            }
+          )
         }
       }
     }
