@@ -11,7 +11,7 @@ import software.amazon.awssdk.services.sns.model.ListTopicsRequest
 import software.amazon.awssdk.services.sns.model.DeleteTopicRequest
 
 object SnsExample extends App {
-  import com.strad.awsio.util.Transformations._
+  import com.github.rstradling.awsio.util.Transformations._
   val builder = SNSAsyncClient.builder().build
   val sns: SnsTopicOps[IO] = new SnsTopicOpsAwsImpl[IO](builder)
 
