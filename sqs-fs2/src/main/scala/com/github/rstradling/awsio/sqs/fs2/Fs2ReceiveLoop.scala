@@ -28,6 +28,7 @@ object Fs2ReceiveLoop {
       implicit r: ReceiveLoop[F, A, S]): S[F, A] = {
     r.receive(messageOps, receiveMessageRequest)
   }
+  @SuppressWarnings(Array("org.wartremover.warts.Null"))
   implicit def receiveLoop[F[_]: Effect]: ReceiveLoop[F, Message, fs2.Stream] =
     new ReceiveLoop[F, Message, fs2.Stream] {
       def receive(messageOps: MessageOps[F],
