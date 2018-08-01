@@ -35,7 +35,7 @@ object SnsExample extends App {
         .build()
       _ <- sns.delete(delTopReq)
     } yield ()
-    res.unsafeRunTimed(10.seconds)
+    val _ = res.unsafeRunTimed(10.seconds)
     ()
   }
   publish()

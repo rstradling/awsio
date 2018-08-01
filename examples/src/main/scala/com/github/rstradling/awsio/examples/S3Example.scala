@@ -19,6 +19,7 @@ object S3Example extends App {
   val builder = S3AsyncClient.builder().build
   val bucket: BucketOps[IO] = new BucketOpsAwsImpl[IO](builder)
 
+  @SuppressWarnings(Array("org.wartremover.warts.Any"))
   def listBuckets(): Unit = {
     val listBucketRequest = ListBucketsRequest
       .builder()
@@ -28,7 +29,7 @@ object S3Example extends App {
       buckets <- bucket.list(listBucketRequest)
       _ = buckets.buckets().asScala.foreach(println)
     } yield ()
-    ret.unsafeRunTimed(10.seconds)
+    val _ = ret.unsafeRunTimed(10.seconds)
     ()
   }
 
@@ -62,7 +63,7 @@ object S3Example extends App {
       _ = IO.sleep(5.seconds) // S3 eventual consistency sleep :)
       _ <- bucket.exists(bucketRequest).map(bucketExistsError[IO])
     } yield ()
-    ret.unsafeRunTimed(20.seconds)
+    val _ = ret.unsafeRunTimed(20.seconds)
     ()
   }
 

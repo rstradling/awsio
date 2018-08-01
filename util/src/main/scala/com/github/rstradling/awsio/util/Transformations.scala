@@ -12,10 +12,11 @@ import monix.execution.Cancelable
 import scala.util.Failure
 import scala.util.Success
 
+@SuppressWarnings(Array("org.wartremover.warts.Null"))
 object Transformations {
   def toIO[A](cf: CompletableFuture[A]): IO[A] =
     IO.cancelable(cb => {
-      cf.handle[Unit](new BiFunction[A, Throwable, Unit] {
+      val _ = cf.handle[Unit](new BiFunction[A, Throwable, Unit] {
         override def apply(result: A, err: Throwable): Unit = {
           err match {
             case null =>
@@ -33,7 +34,7 @@ object Transformations {
     })
   def fromCompletableFuture[A](cf: CompletableFuture[A]): Task[A] =
     Task.async((_, cb) => {
-      cf.handle[Unit](new BiFunction[A, Throwable, Unit] {
+      val _ = cf.handle[Unit](new BiFunction[A, Throwable, Unit] {
         override def apply(result: A, err: Throwable): Unit = {
           err match {
             case null =>
@@ -47,7 +48,10 @@ object Transformations {
           }
         }
       })
-      Cancelable(() => { cf.cancel(true); () })
+      Cancelable(() => {
+        val _ = cf.cancel(true)
+        ()
+      })
     })
 
   implicit def completableFutureToIO[A]: CompletableFuture ~> IO =

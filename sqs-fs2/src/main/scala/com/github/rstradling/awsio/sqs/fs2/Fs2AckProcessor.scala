@@ -47,6 +47,7 @@ object Fs2AckProcessor {
       deleteResponse <- messageOps.delete(deleteMessageRequest)
     } yield ()
   }
+  @SuppressWarnings(Array("org.wartremover.warts.Any"))
   implicit def ackProcessor[F[_]: Effect, B]
     : AckProcessor[F, Message, B, fs2.Stream] =
     new AckProcessor[F, Message, B, fs2.Stream] {

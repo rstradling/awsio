@@ -7,6 +7,7 @@ import scala.xml.transform.{RewriteRule, RuleTransformer}
 val sharedSettings = Seq(
   organization := "com.github.rstradling",
   crossScalaVersions := Seq("2.11.12", "2.12.6"),
+  wartremoverErrors ++= Warts.unsafe,
   scalacOptions ++= Seq(
     /*"-Xfatal-warnings",*/
     "-Ywarn-unused-import",
