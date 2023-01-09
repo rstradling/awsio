@@ -1,7 +1,8 @@
 package com.github.rstradling.awsio.sqs.fs2
 
-import cats.effect.Effect
+import cats.effect.Async
 import cats.implicits._
+import cats.ApplicativeError
 import com.github.rstradling.awsio.sqs.ReceiveLoop
 import com.github.rstradling.awsio.sqs.MessageOps
 import com.github.rstradling.awsio.sqs.AckProcessor
@@ -26,7 +27,7 @@ object Fs2AckProcessor {
     * @tparam B
     * @return
     */
-  def process[F[_]: Effect, B](messageOps: MessageOps[F],
+  def process[F[_]: Async, B](messageOps: MessageOps[F],
                        queueUrl: String,
                        receiveMessageRequest: ReceiveMessageRequest,
                        handler: Message => Either[Throwable, B])(
@@ -37,7 +38,7 @@ object Fs2AckProcessor {
                     handler)(Fs2ReceiveLoop.receiveLoop[F])
   }
 
-  private def deleteMessage[F[_]: Effect](m: Message,
+  private def deleteMessage[F[_]: Async](m: Message,
                                          messageOps: MessageOps[F],
                                          queueUrl: String): F[Unit] = {
     val deleteMessageRequest = DeleteMessageRequest
@@ -49,7 +50,7 @@ object Fs2AckProcessor {
       deleteResponse <- messageOps.delete(deleteMessageRequest)
     } yield ()
   }
-  implicit def ackProcessor[F[_]: Effect, B]
+  implicit def ackProcessor[F[_], B](implicit F: ApplicativeError[F, Throwable] with Async[F])
     : AckProcessor[F, Message, B, fs2.Stream] =
     new AckProcessor[F, Message, B, fs2.Stream] {
       def processAndAck(messageOps: MessageOps[F],
@@ -61,10 +62,10 @@ object Fs2AckProcessor {
         receiveLoop.receive(messageOps, receiveMessageRequest).flatMap {
           msg =>
             handler(msg).fold(
-              (t => fs2.Stream.raiseError(t)), { item =>
+              (t => fs2.Stream.raiseError[F](t)), { item =>
                 val ret = for {
-                  del <- deleteMessage(msg, messageOps, queueUrl)
-                  res <- implicitly[Effect[F]].pure(item)
+                  _   <- deleteMessage(msg, messageOps, queueUrl)
+                  res <- implicitly[Async[F]].pure(item)
                 } yield res
                 fs2.Stream.eval(ret)
               }

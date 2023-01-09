@@ -1,9 +1,9 @@
 package com.github.rstradling.awsio.sqs.fs2
 
-import cats.effect.Effect
+import cats.effect.Async
 import com.github.rstradling.awsio.sqs.ReceiveLoop
 import com.github.rstradling.awsio.sqs.MessageOps
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest
 import software.amazon.awssdk.services.sqs.model.Message
 
@@ -27,12 +27,12 @@ object Fs2ReceiveLoop {
       implicit r: ReceiveLoop[F, A, S]): S[F, A] = {
     r.receive(messageOps, receiveMessageRequest)
   }
-  implicit def receiveLoop[F[_]: Effect]: ReceiveLoop[F, Message, fs2.Stream] =
+  implicit def receiveLoop[F[_]: Async]: ReceiveLoop[F, Message, fs2.Stream] =
     new ReceiveLoop[F, Message, fs2.Stream] {
       def receive(messageOps: MessageOps[F],
                   receiveMessageRequest: ReceiveMessageRequest)
         : fs2.Stream[F, Message] = {
-        val f = implicitly[Effect[F]]
+        val f = implicitly[Async[F]]
         for {
           _  <- fs2.Stream.repeatEval(f.pure(()))
           m  <- fs2.Stream.eval(messageOps.receive(receiveMessageRequest))

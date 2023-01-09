@@ -1,12 +1,12 @@
 package com.github.rstradling.awsio.sns
 
+import cats.effect.Async
 import cats.~>
-import cats.effect.Effect
 import java.util.concurrent.CompletableFuture
-import software.amazon.awssdk.services.sns.SNSAsyncClient
+import software.amazon.awssdk.services.sns.SnsAsyncClient
 import software.amazon.awssdk.services.sns.model._
 
-class SnsTopicOpsAwsImpl[F[_]](client: SNSAsyncClient)(implicit f: Effect[F], transform: CompletableFuture ~> F) extends SnsTopicOps[F] {
+class SnsTopicOpsAwsImpl[F[_]](client: SnsAsyncClient)(implicit F: Async[F], transform: CompletableFuture ~> F) extends SnsTopicOps[F] {
   def create(createTopicRequest: CreateTopicRequest): F[CreateTopicResponse] = {
     transform(client.createTopic(createTopicRequest))
   }

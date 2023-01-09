@@ -4,27 +4,38 @@ import scala.xml.Elem
 import scala.xml.transform.{RewriteRule, RuleTransformer}
 
 
+val catsVersion = "2.9.0"
+val catsEffectVersion = "3.4.4"
+val awsVersion = "2.19.8"
+val fs2Version = "3.4.0"
+
 val sharedSettings = Seq(
   organization := "com.github.rstradling",
-  crossScalaVersions := Seq("2.11.12", "2.12.6"),
-  scalacOptions ++= Seq(
+  crossScalaVersions := Seq("2.13.10", "3.2.1"),
+  scalaVersion := "3.2.1",
+  scalacOptions ++= {
     /*"-Xfatal-warnings",*/
-    "-Ywarn-unused-import",
-    "-Ypartial-unification",
-    "-deprecation",
-    "-encoding",
-    "UTF-8",
-    "-feature",
-    "-language:higherKinds",
-    "-target:jvm-1.8",
-    "-unchecked",
-    "-Ywarn-value-discard",
-    "-Ywarn-numeric-widen"
-  ),
+    if (scalaVersion.value.startsWith("3")) Seq(
+      "-Werror",
+      "-Ykind-projector",
+      "-deprecation"
+    )
+    else Seq(
+        "-deprecation",
+        "-encoding",
+        "UTF-8",
+        "-feature",
+        "-language:higherKinds",
+        "-release:11",
+        "-unchecked",
+        "-Ywarn-value-discard",
+        "-Ywarn-numeric-widen"
+    )
+  },
   libraryDependencies ++= Seq(
-    "org.typelevel" %% "cats-core" % "1.2.0",
-    "org.typelevel" %% "cats-effect" % "1.0.0-RC2",
-    scalaTest % Test
+    "org.typelevel" %% "cats-core" % catsVersion,
+    "org.typelevel" %% "cats-effect" % catsEffectVersion,
+    uTest % Test
   ),
   organization := "com.github.rstradling",
   releaseCrossBuild := true,
@@ -42,12 +53,12 @@ val sharedSettings = Seq(
     releaseStepCommand("sonatypeReleaseAll"),
     pushChanges
   ),
-  isSnapshot in ThisBuild := version.value endsWith "SNAPSHOT",
+  ThisBuild / isSnapshot := version.value endsWith "SNAPSHOT",
   publishTo := Some(
-    if (isSnapshot.value)
-      Opts.resolver.sonatypeSnapshots
-    else
-      Opts.resolver.sonatypeStaging),
+    if (isSnapshot.value) {
+      Opts.resolver.sonatypeOssSnapshots.head
+    } else
+      Opts.resolver.sonatypeOssReleases.head),
   publishMavenStyle := true,
   pomIncludeRepository := { _ =>
     false
@@ -79,8 +90,8 @@ lazy val root = (project in file("."))
     name := "awsio-io-root",
     publishArtifact := false
   )
-  .aggregate(s3, sns, sqs, util, sqsFs2, sqsMonix, examples)
-  .dependsOn(s3, sns, sqs, util, sqsFs2, sqsMonix, examples)
+  .aggregate(s3, sns, sqs, util, sqsFs2, examples)
+  .dependsOn(s3, sns, sqs, util, sqsFs2, examples)
   .settings(sharedSettings)
 
 lazy val s3 = project
@@ -88,7 +99,7 @@ lazy val s3 = project
     moduleName := "awsio-s3",
     name := "awsio-s3",
     libraryDependencies ++= Seq(
-      "software.amazon.awssdk" % "s3" % "2.0.0-preview-10"
+      "software.amazon.awssdk" % "s3" % awsVersion 
     )
   )
   .settings(sharedSettings)
@@ -98,7 +109,7 @@ lazy val sns = project
     moduleName := "awsio-sns",
     name := "awsio-sns",
     libraryDependencies ++= Seq(
-      "software.amazon.awssdk" % "sns" % "2.0.0-preview-10"
+      "software.amazon.awssdk" % "sns" % awsVersion 
     )
   )
   .settings(sharedSettings)
@@ -108,7 +119,7 @@ lazy val sqs = project
     moduleName := "awsio-sqs",
     name := "awsio-sqs",
     libraryDependencies ++= Seq(
-      "software.amazon.awssdk" % "sqs" % "2.0.0-preview-10"
+      "software.amazon.awssdk" % "sqs" % awsVersion 
     )
   )
   .settings(sharedSettings)
@@ -118,18 +129,7 @@ lazy val sqsFs2 = (project in file("sqs-fs2"))
     moduleName := "awsio-sqs-fs2",
     name := "awsio-sqs-fs2",
     libraryDependencies ++= Seq(
-      "co.fs2" %% "fs2-io" % "1.0.0-M2"
-    )
-  )
-  .dependsOn(sqs)
-  .settings(sharedSettings)
-
-lazy val sqsMonix = (project in file("sqs-monix"))
-  .settings(
-    moduleName := "awsio-sqs-monix",
-    name := "awsio-sqs-monix",
-    libraryDependencies ++= Seq(
-      "io.monix" %% "monix" % "3.0.0-RC1"
+      "co.fs2" %% "fs2-io" % fs2Version 
     )
   )
   .dependsOn(sqs)
@@ -139,12 +139,9 @@ lazy val util = project
   .settings(
     moduleName := "awsio-util",
     name := "awsio-util",
-    libraryDependencies ++= Seq(
-      "io.monix" %% "monix" % "3.0.0-RC1"
-    )
   )
   .settings(sharedSettings)
 
 lazy val examples = project
-  .dependsOn(s3, sns, sqs, util, sqsFs2, sqsMonix)
+  .dependsOn(s3, sns, sqs, util, sqsFs2)
   .settings(sharedSettings)
